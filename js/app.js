@@ -1,0 +1,287 @@
+// ============================================================
+// js/app.js  —  Main Application Logic
+// ============================================================
+// Handles: login/logout, page routing, data refresh loop,
+// theme toggle, add farmer/truck forms, manual dispatch,
+// truck status toggling.
+// ============================================================
+
+// ── STATE ────────────────────────────────────────────────────
+let appData = { farmers: [], trucks: [], dispatches: [] };
+let refreshTimer = null;
+
+// ── BOOT ─────────────────────────────────────────────────────
+// Called once when the page loads.
+// Shows login screen; app shell stays hidden until auth.
+
+document.addEventListener("DOMContentLoaded", () => {
+  startClock();
+  restoreTheme();
+  // Close modals when clicking outside
+  document.querySelectorAll(".modal-overlay").forEach(o => {
+    o.addEventListener("click", e => { if (e.target === o) o.classList.remove("open"); });
+  });
+});
+
+// ── CLOCK ─────────────────────────────────────────────────────
+function startClock() {
+  const el = document.getElementById("liveTime");
+  if (!el) return;
+  const tick = () => el.textContent = new Date().toLocaleTimeString("en-GB", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit"
+  });
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+// Simple credential check against config.js values.
+// For production, swap this with Supabase Auth or Netlify Identity:
+//   https://supabase.com/docs/guides/auth
+//   https://docs.netlify.com/security/secure-access-to-your-sites/identity/
+
+async function doLogin() {
+  const user = document.getElementById("loginUser").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const btn  = document.getElementById("loginBtn");
+
+  const cfg = window.CONFIG?.APP || {};
+  if (!cfg.DEMO_USERNAME || !cfg.DEMO_PASSWORD) {
+    // Config not set — allow any non-empty credentials for demo
+    if (!user || !pass) { showToast("Enter credentials", true); return; }
+  } else {
+    if (user !== cfg.DEMO_USERNAME || pass !== cfg.DEMO_PASSWORD) {
+      showToast("Invalid credentials", true); return;
+    }
+  }
+
+  btn.textContent = "Loading...";
+  btn.disabled = true;
+
+  // Load initial data
+  appData = await loadAllData();
+  _allFarmers   = [...appData.farmers];
+  _allTrucks    = [...appData.trucks];
+  _allDispatches= [...appData.dispatches];
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("mainApp").style.display     = "grid";
+  document.getElementById("clientLabel").textContent   =
+    cfg.CLIENT_NAME || user;
+
+  // Render initial state
+  renderAll();
+  showPage("dashboard");
+
+  // Start auto-refresh
+  const interval = window.CONFIG?.SHEETS?.REFRESH_INTERVAL || 30000;
+  if (interval > 0) {
+    refreshTimer = setInterval(refreshData, interval);
+  }
+}
+
+function doLogout() {
+  clearInterval(refreshTimer);
+  document.getElementById("mainApp").style.display   = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("loginBtn").textContent = "Sign in";
+  document.getElementById("loginBtn").disabled = false;
+}
+
+// Allow Enter key on login form
+document.addEventListener("DOMContentLoaded", () => {
+  ["loginUser","loginPass"].forEach(id => {
+    document.getElementById(id)?.addEventListener("keydown", e => {
+      if (e.key === "Enter") doLogin();
+    });
+  });
+});
+
+// ── DATA REFRESH ──────────────────────────────────────────────
+// Runs every REFRESH_INTERVAL ms to pull fresh data from Sheets.
+// Make.com writes to DispatchLog after every SMS dispatch, so
+// new rows appear here automatically.
+
+async function refreshData() {
+  const fresh = await loadAllData();
+  appData = fresh;
+  _allFarmers    = [...fresh.farmers];
+  _allTrucks     = [...fresh.trucks];
+  _allDispatches = [...fresh.dispatches];
+  renderAll();
+  showToast("Data refreshed");
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────
+function renderAll() {
+  renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
+  renderRecentDispatches(appData.dispatches);
+  renderDashTrucks(appData.trucks);
+}
+
+// ── PAGE ROUTING ──────────────────────────────────────────────
+function showPage(id, sourceEl) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById("page-" + id)?.classList.add("active");
+  if (sourceEl) sourceEl.classList.add("active");
+  else {
+    // Activate the right nav item by data attribute
+    document.querySelector(`[data-page="${id}"]`)?.classList.add("active");
+  }
+
+  // Lazy render per page
+  switch (id) {
+    case "map":
+      // Small delay lets the div paint before we measure offsetWidth
+      setTimeout(() => renderMap(appData.farmers, appData.trucks), 50);
+      break;
+    case "dispatch":
+      renderDispatchTable(_allDispatches);
+      break;
+    case "trucks":
+      renderTruckTable(_allTrucks);
+      break;
+    case "farmers":
+      renderFarmerTable(_allFarmers);
+      break;
+  }
+}
+
+// ── THEME TOGGLE ──────────────────────────────────────────────
+// Persists preference in localStorage so it survives page reload.
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn  = document.getElementById("themeBtn");
+  const isLight = html.classList.toggle("light");
+  btn.textContent = isLight ? "☾" : "☀";
+  localStorage.setItem("agrihaulTheme", isLight ? "light" : "dark");
+}
+
+function restoreTheme() {
+  const saved = localStorage.getItem("agrihaulTheme");
+  const btn   = document.getElementById("themeBtn");
+  if (saved === "light") {
+    document.documentElement.classList.add("light");
+    if (btn) btn.textContent = "☾";
+  }
+}
+
+// ── TRUCK STATUS TOGGLE ───────────────────────────────────────
+// Changes status in local state (visual only).
+// To persist, you'd write back to Google Sheets via its API
+// or update the sheet manually. For now this is a dashboard
+// override for ops use.
+
+function cycleStatus(truckId) {
+  const t = appData.trucks.find(t => t.TruckID === truckId);
+  if (!t) return;
+  const cycle = ["Available", "En Route", "Maintenance"];
+  t.Status = cycle[(cycle.indexOf(t.Status) + 1) % cycle.length];
+  t.LastUpdated = new Date().toLocaleString("en-GB");
+  renderTruckTable(_allTrucks);
+  renderDashTrucks(appData.trucks);
+  renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
+  showToast(`${truckId} → ${t.Status}`);
+}
+
+// ── SIMULATE DISPATCH (demo button) ──────────────────────────
+// Creates a fake dispatch record for testing.
+// In production this button can be replaced by a "Force dispatch"
+// that calls triggerMakeDispatch() to fire the real Make.com flow.
+
+function simulateDispatch() {
+  const farmers = appData.farmers;
+  const avail   = appData.trucks.filter(t => t.Status === "Available");
+  if (!farmers.length || !avail.length) {
+    showToast("No available trucks or farmers to simulate", true); return;
+  }
+  const f  = farmers[Math.floor(Math.random() * farmers.length)];
+  const t  = avail[0];
+  t.Status = "En Route";
+  const now = new Date();
+  const entry = {
+    Date: now.toISOString().slice(0,10),
+    Time: now.toTimeString().slice(0,5),
+    Farmer: f.Name, Village: f.Village,
+    WeightKG: 200 + Math.floor(Math.random() * 800),
+    Driver: t.DriverName, TruckID: t.TruckID,
+    DistanceKM: (Math.random() * 80 + 5).toFixed(1)
+  };
+  appData.dispatches.unshift(entry);
+  _allDispatches = [...appData.dispatches];
+  renderAll();
+  renderDispatchTable(_allDispatches, true);
+  showToast(`Dispatched ${t.TruckID} to ${f.Name}`);
+}
+
+// ── ADD TRUCK ─────────────────────────────────────────────────
+// Adds to local state. To persist to Google Sheets, use the
+// Google Sheets API or have ops staff add rows directly.
+
+function addTruck() {
+  const get = id => document.getElementById(id)?.value.trim();
+  const id   = get("f-truckId");
+  const name = get("f-driverName");
+  const ph   = get("f-driverPhone");
+  if (!id || !name || !ph) { showToast("Fill in required fields", true); return; }
+
+  const truck = {
+    TruckID: id, DriverName: name, Phone: ph,
+    Status:  document.getElementById("f-truckStatus")?.value || "Available",
+    Lat:     parseFloat(get("f-truckLat")) || window.CONFIG?.APP?.MAP_CENTER_LAT || 10.0,
+    Lon:     parseFloat(get("f-truckLon")) || window.CONFIG?.APP?.MAP_CENTER_LON || -8.0,
+    LastUpdated: new Date().toLocaleString("en-GB")
+  };
+  appData.trucks.push(truck);
+  _allTrucks = [...appData.trucks];
+  closeModal("addTruck");
+  renderTruckTable(_allTrucks);
+  renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
+  showToast(`Truck ${id} added`);
+  // Clear form
+  ["f-truckId","f-driverName","f-driverPhone","f-truckLat","f-truckLon"].forEach(i => {
+    const el = document.getElementById(i); if (el) el.value = "";
+  });
+}
+
+// ── ADD FARMER ────────────────────────────────────────────────
+function addFarmer() {
+  const get = id => document.getElementById(id)?.value.trim();
+  const name    = get("f-farmerName");
+  const phone   = get("f-farmerPhone");
+  const village = get("f-farmerVillage");
+  if (!name || !phone) { showToast("Fill in required fields", true); return; }
+
+  const farmer = {
+    Name: name, Phone: phone, Village: village || "—",
+    Lat: parseFloat(get("f-farmerLat")) || window.CONFIG?.APP?.MAP_CENTER_LAT || 10.0,
+    Lon: parseFloat(get("f-farmerLon")) || window.CONFIG?.APP?.MAP_CENTER_LON || -8.0,
+    Registered: new Date().toISOString().slice(0,10)
+  };
+  appData.farmers.push(farmer);
+  _allFarmers = [...appData.farmers];
+  closeModal("addFarmer");
+  renderFarmerTable(_allFarmers);
+  renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
+  showToast(`Farmer ${name} registered`);
+  ["f-farmerName","f-farmerPhone","f-farmerVillage","f-farmerLat","f-farmerLon"].forEach(i => {
+    const el = document.getElementById(i); if (el) el.value = "";
+  });
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────
+function openModal(id)  { document.getElementById("modal-" + id)?.classList.add("open"); }
+function closeModal(id) { document.getElementById("modal-" + id)?.classList.remove("open"); }
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.toggle("toast-error", isError);
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
+}

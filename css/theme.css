@@ -1,0 +1,120 @@
+/* ============================================================
+   css/theme.css  —  AgriHaul Design Tokens
+   Dark mode is default. Light mode activates via
+   the class "light" on <html>.
+   ============================================================ */
+
+/* ── DARK MODE (default) ──────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-base:       #0c0f07;
+  --bg-surface:    #131608;
+  --bg-raised:     #1a1e0d;
+  --bg-hover:      #1f2410;
+  --bg-overlay:    rgba(12, 15, 7, 0.85);
+
+  /* Brand accent — a vivid agricultural lime-green */
+  --accent:        #b8e03a;
+  --accent-muted:  #7fa028;
+  --accent-subtle: #1c2509;
+  --accent-glow:   rgba(184, 224, 58, 0.15);
+
+  /* Semantic colors */
+  --green:         #6dc94a;
+  --green-bg:      #0e1c08;
+  --green-border:  #2a4818;
+  --amber:         #e8a83a;
+  --amber-bg:      #1c1408;
+  --amber-border:  #3d2e10;
+  --red:           #e8523a;
+  --red-bg:        #1c0a08;
+  --red-border:    #3d1a10;
+  --blue:          #3ab8e8;
+  --blue-bg:       #081418;
+  --blue-border:   #10303d;
+
+  /* Text */
+  --text-primary:   #e8edcc;
+  --text-secondary: #8a9268;
+  --text-muted:     #4a5035;
+  --text-inverse:   #0c0f07;
+
+  /* Borders */
+  --border-subtle:  #1e2410;
+  --border-default: #2c3218;
+  --border-strong:  #3d4820;
+
+  /* Shadows */
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.6);
+
+  /* Radius */
+  --r-sm:  4px;
+  --r-md:  8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+
+  /* Typography */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --transition: 150ms ease;
+  --transition-slow: 300ms ease;
+
+  /* Theme toggle icon */
+  --theme-icon: "☀";
+}
+
+/* ── LIGHT MODE ───────────────────────────────────────────── */
+html.light {
+  --bg-base:       #f2f4eb;
+  --bg-surface:    #ffffff;
+  --bg-raised:     #eef0e5;
+  --bg-hover:      #e8ead8;
+  --bg-overlay:    rgba(242, 244, 235, 0.92);
+
+  --accent:        #5a8a00;
+  --accent-muted:  #3d6000;
+  --accent-subtle: #e8f0cc;
+  --accent-glow:   rgba(90, 138, 0, 0.12);
+
+  --green:         #3a8a20;
+  --green-bg:      #eaf4e4;
+  --green-border:  #b8dcb0;
+  --amber:         #a06000;
+  --amber-bg:      #fdf4e4;
+  --amber-border:  #e0c880;
+  --red:           #c03820;
+  --red-bg:        #fde8e4;
+  --red-border:    #e0a898;
+  --blue:          #1878a8;
+  --blue-bg:       #e4f4fc;
+  --blue-border:   #90c8e8;
+
+  --text-primary:   #1a1e08;
+  --text-secondary: #4a5430;
+  --text-muted:     #8a9468;
+  --text-inverse:   #f2f4eb;
+
+  --border-subtle:  #dde0cc;
+  --border-default: #c8ccb4;
+  --border-strong:  #a8ae90;
+
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.12);
+
+  --theme-icon: "☾";
+}
+
+/* ── SMOOTH TRANSITIONS when switching themes ─────────────── */
+*, *::before, *::after {
+  transition: background-color var(--transition-slow),
+              border-color var(--transition-slow),
+              color var(--transition-slow);
+}
+/* But NOT layout props (would cause reflow jank) */
+* { transition-property: background-color, border-color, color; }

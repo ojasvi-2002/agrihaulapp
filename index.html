@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriHaul Ops</title>
+
+<!-- Google Fonts — Syne (display), DM Sans (body), JetBrains Mono (code) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     STYLESHEETS
+     theme.css  — dark/light CSS variables
+     app.css    — all component styles
+     ============================================================ -->
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN SCREEN
+     Credentials are set in js/config.js → APP.DEMO_USERNAME
+     and APP.DEMO_PASSWORD. Replace with a real auth service
+     (Supabase Auth / Netlify Identity) for production.
+     ============================================================ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">AgriHaul</div>
+    <div class="login-tagline">/ operations portal</div>
+
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in →</button>
+    <p class="login-note">Demo: admin / agrihaulops2024</p>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MAIN APP SHELL (hidden until login)
+     Grid: sidebar (240px) | main content
+           topbar spans full width
+     ============================================================ -->
+<div class="app" id="mainApp">
+
+  <!-- ── TOPBAR ──────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-dot"></div>
+      AgriHaul
+    </div>
+    <div class="topbar-divider"></div>
+    <!-- Client name comes from CONFIG.APP.CLIENT_NAME -->
+    <div class="topbar-client" id="clientLabel">—</div>
+
+    <div class="topbar-right">
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span id="liveTime">--:--:--</span>
+        &nbsp;·&nbsp; SMS live
+      </div>
+      <!-- Dark / Light toggle. State saved to localStorage. -->
+      <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle dark/light mode">☀</button>
+    </div>
+  </header>
+
+  <!-- ── SIDEBAR NAV ─────────────────────────────────────── -->
+  <nav class="sidebar">
+    <div class="nav-section-label">Monitor</div>
+
+    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      Dashboard
+    </div>
+
+    <div class="nav-item" data-page="map" onclick="showPage('map', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+        <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+      </svg>
+      Live Map
+    </div>
+
+    <div class="nav-item" data-page="dispatch" onclick="showPage('dispatch', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
+      Dispatch Log
+      <span class="nav-badge" id="dispatchBadge">0</span>
+    </div>
+
+    <div class="nav-section-label">Manage</div>
+
+    <div class="nav-item" data-page="trucks" onclick="showPage('trucks', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+        <rect x="1" y="3" width="15" height="13" rx="1"/>
+        <path d="M16 8h4l3 3v5h-7V8z"/>
+        <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+      </svg>
+      Trucks
+    </div>
+
+    <div class="nav-item" data-page="farmers" onclick="showPage('farmers', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Farmers
+    </div>
+
+    <div class="nav-section-label">Account</div>
+    <div class="nav-item" onclick="doLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sign out
+    </div>
+
+    <!-- Sidebar footer stats -->
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-row">
+        <span>Available</span><span class="sidebar-stat" id="sf-available">—</span>
+      </div>
+      <div class="sidebar-footer-row">
+        <span>En route</span><span class="sidebar-stat" id="sf-enroute">—</span>
+      </div>
+      <div class="sidebar-footer-row">
+        <span>Farmers</span><span class="sidebar-stat" id="sf-farmers">—</span>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ── MAIN CONTENT ────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ================================================== -->
+    <!--  PAGE: DASHBOARD                                   -->
+    <!-- ================================================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Operations Overview</div>
+          <div class="page-subtitle">Live fleet + dispatch summary</div>
+        </div>
+      </div>
+
+      <!-- Metric cards — values filled by renderMetrics() in tables.js -->
+      <div class="metrics-grid">
+        <div class="metric-card green">
+          <div class="metric-label">Available trucks</div>
+          <div class="metric-value" id="m-available">—</div>
+          <div class="metric-sub" id="m-available-sub">loading…</div>
+        </div>
+        <div class="metric-card amber">
+          <div class="metric-label">Dispatches today</div>
+          <div class="metric-value" id="m-dispatched">—</div>
+          <div class="metric-sub">trips completed</div>
+        </div>
+        <div class="metric-card blue">
+          <div class="metric-label">Weight collected today</div>
+          <div class="metric-value" id="m-weight">—</div>
+          <div class="metric-sub">total produce</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Registered farmers</div>
+          <div class="metric-value" id="m-farmers">—</div>
+          <div class="metric-sub">in your network</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Recent dispatches -->
+        <div>
+          <div class="section-head">
+            <div class="section-title">Recent dispatches</div>
+            <div class="section-rule"></div>
+            <div class="section-btn" onclick="showPage('dispatch', document.querySelector('[data-page=dispatch]'))">View all →</div>
+          </div>
+          <div class="table-card">
+            <table>
+              <thead><tr>
+                <th>Time</th><th>Farmer</th><th>Village</th>
+                <th>Weight</th><th>Driver</th><th>Dist.</th>
+              </tr></thead>
+              <tbody id="recentDispatchTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Truck status snapshot -->
+        <div>
+          <div class="section-head">
+            <div class="section-title">Fleet snapshot</div>
+            <div class="section-rule"></div>
+          </div>
+          <div class="table-card">
+            <table>
+              <thead><tr><th>Truck</th><th>Driver</th><th>Status</th></tr></thead>
+              <tbody id="dashTruckTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+
+    <!-- ================================================== -->
+    <!--  PAGE: LIVE MAP                                    -->
+    <!--  Pins rendered by js/map.js using Lat/Lon from     -->
+    <!--  your Google Sheet.                                -->
+    <!--  MAP_BOUNDS in map.js covers West Africa.          -->
+    <!-- ================================================== -->
+    <div class="page" id="page-map">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Live Map</div>
+          <div class="page-subtitle">Truck & farmer GPS positions · updates when drivers SMS LOC</div>
+        </div>
+      </div>
+      <div class="map-card">
+        <div class="map-toolbar">
+          <div class="map-toolbar-title">Field overview — West Africa</div>
+          <div class="map-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Available</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>En Route</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Maintenance</div>
+            <div class="legend-item"><div class="legend-sq" style="background:var(--blue)"></div>Farmer</div>
+          </div>
+        </div>
+        <!-- mapCanvas is the positioning parent for all truck/farmer pins -->
+        <div class="map-canvas" id="mapCanvas">
+          <div class="map-tooltip" id="mapTooltip"></div>
+        </div>
+      </div>
+    </div><!-- /map -->
+
+
+    <!-- ================================================== -->
+    <!--  PAGE: DISPATCH LOG                                -->
+    <!--  Data comes from DispatchLog sheet.               -->
+    <!--  Make.com auto-appends a row after every dispatch. -->
+    <!-- ================================================== -->
+    <div class="page" id="page-dispatch">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dispatch Log</div>
+          <div class="page-subtitle">All dispatch records · auto-updated by Make.com</div>
+        </div>
+      </div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="dispatchSearch"
+          placeholder="Search farmer, village, driver, truck ID…"
+          oninput="filterDispatch()">
+        <!-- Simulate button is for demo/testing only. Remove in production. -->
+        <button class="btn btn-ghost" onclick="simulateDispatch()">+ Simulate</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Time</th><th>Farmer</th><th>Village</th>
+            <th>Weight KG</th><th>Driver</th><th>Truck</th><th>Distance</th>
+          </tr></thead>
+          <tbody id="dispatchTable"></tbody>
+        </table>
+      </div>
+    </div><!-- /dispatch -->
+
+
+    <!-- ================================================== -->
+    <!--  PAGE: TRUCKS                                      -->
+    <!--  Source: Trucks sheet in Google Sheets.           -->
+    <!--  Columns: TruckID, DriverName, Phone, Status,     -->
+    <!--           Lat, Lon, LastUpdated                    -->
+    <!-- ================================================== -->
+    <div class="page" id="page-trucks">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Fleet Management</div>
+          <div class="page-subtitle">All trucks · Toggle status · Add new</div>
+        </div>
+      </div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="truckSearch"
+          placeholder="Search truck ID or driver name…"
+          oninput="filterTrucks()">
+        <button class="btn btn-primary" onclick="openModal('addTruck')">+ Add truck</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Truck ID</th><th>Driver</th><th>Phone</th>
+            <th>Status</th><th>Lat</th><th>Lon</th><th>Last Updated</th><th></th>
+          </tr></thead>
+          <tbody id="truckTable"></tbody>
+        </table>
+      </div>
+    </div><!-- /trucks -->
+
+
+    <!-- ================================================== -->
+    <!--  PAGE: FARMERS                                     -->
+    <!--  Source: Farmers sheet in Google Sheets.          -->
+    <!--  Columns: Name, Phone, Village, Lat, Lon,         -->
+    <!--           Registered                               -->
+    <!-- ================================================== -->
+    <div class="page" id="page-farmers">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Farmer Registry</div>
+          <div class="page-subtitle">All registered farmers</div>
+        </div>
+      </div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="farmerSearch"
+          placeholder="Search name, village, phone…"
+          oninput="filterFarmers()">
+        <button class="btn btn-primary" onclick="openModal('addFarmer')">+ Add farmer</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr>
+            <th>Name</th><th>Phone</th><th>Village</th>
+            <th>Lat</th><th>Lon</th><th>Registered</th>
+          </tr></thead>
+          <tbody id="farmerTable"></tbody>
+        </table>
+      </div>
+    </div><!-- /farmers -->
+
+  </main>
+</div><!-- /mainApp -->
+
+
+<!-- ============================================================
+     MODAL: ADD TRUCK
+     Adds to local state. To persist, add a Google Sheets API
+     write call in addTruck() in app.js, or have ops staff
+     add rows directly to the Google Sheet.
+     ============================================================ -->
+<div class="modal-overlay" id="modal-addTruck">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Truck</div>
+      <button class="modal-close" onclick="closeModal('addTruck')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Truck ID *</label>
+        <input class="form-input" id="f-truckId" placeholder="TRK-009">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Driver name *</label>
+        <input class="form-input" id="f-driverName" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Driver phone *</label>
+        <input class="form-input" id="f-driverPhone" placeholder="+221 77 …">
+        <span class="form-hint">This is the number that receives SMS dispatches</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Initial status</label>
+        <select class="form-select" id="f-truckStatus">
+          <option value="Available">Available</option>
+          <option value="En Route">En Route</option>
+          <option value="Maintenance">Maintenance</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">GPS Lat</label>
+        <input class="form-input" id="f-truckLat" placeholder="14.6928">
+      </div>
+      <div class="form-group">
+        <label class="form-label">GPS Lon</label>
+        <input class="form-input" id="f-truckLon" placeholder="-17.4467">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addTruck()">Add truck</button>
+      <button class="btn btn-ghost"   onclick="closeModal('addTruck')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: ADD FARMER
+     ============================================================ -->
+<div class="modal-overlay" id="modal-addFarmer">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Farmer</div>
+      <button class="modal-close" onclick="closeModal('addFarmer')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Full name *</label>
+        <input class="form-input" id="f-farmerName" placeholder="Farmer name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone *</label>
+        <input class="form-input" id="f-farmerPhone" placeholder="+221 77 …">
+        <span class="form-hint">This number sends SMS to trigger dispatch</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Village</label>
+        <input class="form-input" id="f-farmerVillage" placeholder="Village name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">GPS Lat</label>
+        <input class="form-input" id="f-farmerLat" placeholder="14.7833">
+      </div>
+      <div class="form-group" style="grid-column: 1">
+        <label class="form-label">GPS Lon</label>
+        <input class="form-input" id="f-farmerLon" placeholder="-16.9240">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addFarmer()">Register farmer</button>
+      <button class="btn btn-ghost"   onclick="closeModal('addFarmer')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+
+<!-- ============================================================
+     SCRIPTS — load order matters:
+     1. config.js   — must be first (CONFIG object)
+     2. data.js     — uses CONFIG, exports loadAllData / sendSMS
+     3. map.js      — uses statusClass from data.js
+     4. tables.js   — uses statusBadge from data.js
+     5. app.js      — uses everything above
+
+     TO CONNECT GOOGLE SHEETS:
+       Edit js/config.js → SHEETS.FARMERS_URL / TRUCKS_URL / DISPATCH_URL
+
+     TO ENABLE SMS:
+       Edit js/config.js → TWILIO keys
+
+     TO ENABLE MAKE.COM AUTO-DISPATCH:
+       Edit js/config.js → MAKE.WEBHOOK_URL
+     ============================================================ -->
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/tables.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+# ============================================================
+# AgriHaul .gitignore
+# ============================================================
+# IMPORTANT: config.js contains your API keys (Twilio, Google
+# Sheets URLs). This file must NEVER be pushed to GitHub.
+# Always use config.example.js as the template for new setups.
+# ============================================================
+
+# API keys — never commit this
+js/config.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Node (if you ever add a build step)
+node_modules/
+package-lock.json
