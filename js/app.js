@@ -153,18 +153,25 @@ function showPage(id, sourceEl) {
 
 function toggleTheme() {
   const html = document.documentElement;
-  const btn  = document.getElementById("themeBtn");
   const isLight = html.classList.toggle("light");
-  btn.textContent = isLight ? "☾" : "☀";
+  const icon = isLight ? "☾" : "☀";
+  // Update both the main topbar button and the login screen button
+  const btn1 = document.getElementById("themeBtn");
+  const btn2 = document.getElementById("loginThemeBtn");
+  if (btn1) btn1.textContent = icon;
+  if (btn2) btn2.textContent = icon;
   localStorage.setItem("agrihaulTheme", isLight ? "light" : "dark");
 }
 
 function restoreTheme() {
   const saved = localStorage.getItem("agrihaulTheme");
-  const btn   = document.getElementById("themeBtn");
   if (saved === "light") {
     document.documentElement.classList.add("light");
-    if (btn) btn.textContent = "☾";
+    const icon = "☾";
+    const btn1 = document.getElementById("themeBtn");
+    const btn2 = document.getElementById("loginThemeBtn");
+    if (btn1) btn1.textContent = icon;
+    if (btn2) btn2.textContent = icon;
   }
 }
 

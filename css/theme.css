@@ -118,3 +118,64 @@ html.light {
 }
 /* But NOT layout props (would cause reflow jank) */
 * { transition-property: background-color, border-color, color; }
+
+/* ── LOGIN SCREEN — DARK MODE ─────────────────────────────── */
+:root {
+  /* Sky gradient: deep night → twilight green */
+  --login-sky-top:    #0a1208;
+  --login-sky-bottom: #0f1f0c;
+  /* Orb (moon in dark) */
+  --login-orb-color:  #d4e89a;
+  --login-orb-glow:   rgba(184, 224, 58, 0.25);
+  /* Hills */
+  --hill-back-fill:   #0d1f0a;
+  --hill-mid-fill:    #112610;
+  --hill-front-fill:  #152e12;
+  /* Wheat stalks */
+  --stalk-color:      #4a7a28;
+  --stalk-top:        #8ab840;
+  /* Particles (pollen) */
+  --particle-color:   rgba(184, 224, 58, 0.55);
+  /* Card */
+  --login-card-bg:    rgba(18, 24, 10, 0.82);
+  --login-card-border:rgba(90, 140, 50, 0.35);
+  --login-card-glow:  rgba(100, 180, 40, 0.12);
+  /* Text */
+  --login-logo-color: #b8e03a;
+  --login-tag-color:  #6a8a4a;
+  --login-label:      #8a9a6a;
+  --login-input-bg:   rgba(10, 18, 6, 0.7);
+  --login-input-border: rgba(80, 130, 40, 0.4);
+  --login-input-focus:  rgba(140, 200, 60, 0.6);
+  --login-btn-bg:     #6aaa20;
+  --login-btn-hover:  #7cc428;
+  --login-note-color: #4a6030;
+  --login-leaf-opacity: 0.5;
+}
+
+/* ── LOGIN SCREEN — LIGHT MODE ────────────────────────────── */
+html.light {
+  --login-sky-top:    #c8e8b0;
+  --login-sky-bottom: #e8f5d8;
+  --login-orb-color:  #ffdd60;
+  --login-orb-glow:   rgba(255, 210, 60, 0.4);
+  --hill-back-fill:   #7abf48;
+  --hill-mid-fill:    #5aaa30;
+  --hill-front-fill:  #3d9020;
+  --stalk-color:      #b8900a;
+  --stalk-top:        #e8c020;
+  --particle-color:   rgba(200, 160, 20, 0.5);
+  --login-card-bg:    rgba(255, 255, 248, 0.88);
+  --login-card-border:rgba(60, 140, 20, 0.3);
+  --login-card-glow:  rgba(80, 180, 20, 0.10);
+  --login-logo-color: #2d6a10;
+  --login-tag-color:  #5a8030;
+  --login-label:      #5a7040;
+  --login-input-bg:   rgba(240, 252, 230, 0.9);
+  --login-input-border: rgba(80, 150, 30, 0.35);
+  --login-input-focus:  rgba(60, 140, 20, 0.55);
+  --login-btn-bg:     #3a8a10;
+  --login-btn-hover:  #4aaa18;
+  --login-note-color: #7a9a60;
+  --login-leaf-opacity: 0.7;
+}

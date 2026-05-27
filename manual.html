@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriHaul — Operator Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0c0f07; --surface: #131608; --raised: #1a1e0d;
+  --border:   #252b12; --border2: #333d18;
+  --accent:   #b8e03a; --accent-d:#7fa028; --accent-bg:#1a2208;
+  --green:    #6dc94a; --green-bg:#0e1c08; --green-b: #2a4818;
+  --amber:    #e8a83a; --amber-bg:#1c1408; --amber-b: #3d2e10;
+  --red:      #e8523a; --red-bg:  #1c0a08; --red-b:   #3d1a10;
+  --blue:     #3ab8e8; --blue-bg: #081418; --blue-b:  #10303d;
+  --purple:   #a06ce8; --purple-bg:#14081c;
+  --text:     #e8edcc; --text2:   #8a9268; --text3:   #4a5035;
+  --font-d:   'Syne', sans-serif;
+  --font-b:   'DM Sans', sans-serif;
+  --font-m:   'JetBrains Mono', monospace;
+  --r:6px; --r-lg:12px; --r-xl:18px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.5);
+}
+html.light {
+  --bg:#f0f4e8; --surface:#ffffff; --raised:#e8edda;
+  --border:#d4dcc0; --border2:#bcc8a4;
+  --accent:#4a8a00; --accent-d:#306000; --accent-bg:#e4f0cc;
+  --green:#2a8a18; --green-bg:#e8f5e4; --green-b:#a0d090;
+  --amber:#a06000; --amber-bg:#fdf4e4; --amber-b:#e0c870;
+  --red:#b83020; --red-bg:#fde8e4; --red-b:#e0a898;
+  --blue:#1068a8; --blue-bg:#e4f4fc; --blue-b:#90c8e8;
+  --purple:#7040c8; --purple-bg:#f0e8fc;
+  --text:#1a1e08; --text2:#4a5430; --text3:#8a9468;
+  --shadow:0 4px 24px rgba(0,0,0,0.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--border);padding:0 0 40px}
+.sidebar-header{padding:24px 20px 12px;border-bottom:1px solid var(--border)}
+.sidebar-logo{font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--accent)}
+.sidebar-sub{font-size:11px;color:var(--text3);font-family:var(--font-m);letter-spacing:.06em;margin-top:2px}
+.nav-group{padding:16px 12px 4px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-family:var(--font-m)}
+.nav-link{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;text-decoration:none;transition:all .15s}
+.nav-link:hover{color:var(--text);background:var(--raised)}
+.nav-link.active,.nav-link:target{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-link svg{width:14px;height:14px;flex-shrink:0}
+.sidebar-footer{padding:16px 16px 0;margin-top:20px;border-top:1px solid var(--border)}
+.theme-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text3)}
+.theme-btn{padding:5px 12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--raised);color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font-m);transition:all .15s}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* MAIN */
+.main{max-width:860px;padding:48px 52px;overflow-x:hidden}
+
+/* SECTIONS */
+section{margin-bottom:72px;scroll-margin-top:32px}
+.section-label{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-d);margin-bottom:10px}
+h1{font-family:var(--font-d);font-size:38px;font-weight:800;letter-spacing:-.03em;color:var(--text);line-height:1.1;margin-bottom:16px}
+h2{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--text);margin:40px 0 12px;letter-spacing:-.01em}
+h3{font-family:var(--font-b);font-size:16px;font-weight:500;color:var(--text2);margin:28px 0 8px}
+p{color:var(--text2);margin-bottom:14px;font-size:15px}
+strong{color:var(--text);font-weight:500}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* HERO */
+.hero{padding:56px 0 40px;border-bottom:1px solid var(--border);margin-bottom:56px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-bg);border:1px solid var(--accent-d);border-radius:20px;padding:4px 12px;font-size:11px;font-family:var(--font-m);color:var(--accent);margin-bottom:20px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease infinite}
+.hero p{font-size:17px;max-width:620px;line-height:1.6}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px}
+.stat-value{font-family:var(--font-d);font-size:30px;font-weight:800;color:var(--accent);letter-spacing:-.03em;line-height:1}
+.stat-label{font-size:12px;color:var(--text3);margin-top:5px;font-family:var(--font-m)}
+
+/* FLOW DIAGRAM */
+.flow{display:flex;flex-direction:column;gap:0;margin:24px 0}
+.flow-step{display:flex;align-items:flex-start;gap:16px;position:relative}
+.flow-step:not(:last-child)::after{content:'';position:absolute;left:19px;top:40px;bottom:-8px;width:2px;background:linear-gradient(180deg,var(--border2),transparent)}
+.flow-num{width:40px;height:40px;border-radius:50%;background:var(--accent-bg);border:1.5px solid var(--accent-d);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:13px;font-weight:500;color:var(--accent);flex-shrink:0;margin-top:2px}
+.flow-content{flex:1;padding-bottom:24px}
+.flow-title{font-weight:500;color:var(--text);margin-bottom:3px;font-size:15px}
+.flow-desc{font-size:13px;color:var(--text2)}
+.flow-sms{display:inline-block;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r);padding:4px 10px;font-family:var(--font-m);font-size:12px;color:var(--accent);margin-top:5px}
+
+/* TABLES */
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin:16px 0 28px}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--raised);padding:9px 14px;text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-family:var(--font-m);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:nth-child(even){background:var(--raised)}
+td{padding:10px 14px;font-size:13px;color:var(--text2);vertical-align:top}
+td.hi{color:var(--text);font-weight:500}
+td.mono{font-family:var(--font-m);font-size:12px}
+td.green{color:var(--green);font-weight:600}
+td.amber{color:var(--amber);font-weight:600}
+td.red{color:var(--red);font-weight:500}
+
+/* SMS COMMAND BOXES */
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 28px}
+.cmd-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;position:relative;overflow:hidden}
+.cmd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-accent,var(--accent))}
+.cmd-card.farmer{--card-accent:var(--green)}
+.cmd-card.driver{--card-accent:var(--blue)}
+.cmd-who{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-family:var(--font-m);margin-bottom:8px}
+.cmd-text{font-family:var(--font-m);font-size:15px;color:var(--accent);font-weight:500;margin-bottom:6px}
+.cmd-desc{font-size:12px;color:var(--text2)}
+
+/* CALLOUT BOXES */
+.callout{border-radius:var(--r-lg);padding:16px 20px;margin:16px 0 24px;border-left:3px solid}
+.callout.info{background:var(--blue-bg);border-color:var(--blue)}
+.callout.warn{background:var(--amber-bg);border-color:var(--amber)}
+.callout.success{background:var(--green-bg);border-color:var(--green)}
+.callout.tip{background:var(--accent-bg);border-color:var(--accent)}
+.callout-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-m);font-weight:500;margin-bottom:6px}
+.callout.info .callout-title{color:var(--blue)}
+.callout.warn .callout-title{color:var(--amber)}
+.callout.success .callout-title{color:var(--green)}
+.callout.tip .callout-title{color:var(--accent)}
+.callout p{font-size:13px;margin-bottom:0}
+
+/* CODE */
+code{font-family:var(--font-m);font-size:12px;background:var(--raised);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--accent)}
+.code-block{background:var(--raised);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;font-family:var(--font-m);font-size:13px;color:var(--text2);margin:12px 0 24px;overflow-x:auto;line-height:1.8}
+.code-block .c{color:var(--text3)} /* comment */
+.code-block .k{color:var(--accent)} /* keyword */
+.code-block .v{color:var(--green)} /* value */
+
+/* PAGE NAVIGATOR */
+.page-nav{display:flex;justify-content:space-between;padding-top:32px;border-top:1px solid var(--border);margin-top:40px}
+.page-nav a{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;font-family:var(--font-m);text-decoration:none}
+.page-nav a:hover{color:var(--accent)}
+
+/* ARCHITECTURE DIAGRAM */
+.arch{display:flex;flex-direction:column;gap:0;margin:24px 0}
+.arch-row{display:flex;align-items:stretch;gap:0;margin:0}
+.arch-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin:4px;position:relative}
+.arch-box.accent{border-color:var(--accent-d);background:var(--accent-bg)}
+.arch-box.blue{border-color:var(--blue-b);background:var(--blue-bg)}
+.arch-box.amber{border-color:var(--amber-b);background:var(--amber-bg)}
+.arch-box.green{border-color:var(--green-b);background:var(--green-bg)}
+.arch-box.purple{border-color:#5a309a;background:var(--purple-bg)}
+.arch-title{font-size:11px;font-family:var(--font-m);font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.arch-box.accent .arch-title{color:var(--accent)}
+.arch-box.blue .arch-title{color:var(--blue)}
+.arch-box.amber .arch-title{color:var(--amber)}
+.arch-box.green .arch-title{color:var(--green)}
+.arch-box.purple .arch-title{color:var(--purple)}
+.arch-desc{font-size:12px;color:var(--text2)}
+.arch-arrow{text-align:center;color:var(--text3);font-size:20px;padding:2px 0;line-height:1}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--font-m);border:1px solid}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.badge.available{background:var(--green-bg);color:var(--green);border-color:var(--green-b)}.badge.available::before{background:var(--green)}
+.badge.enroute{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}.badge.enroute::before{background:var(--amber)}
+.badge.maintenance{background:var(--red-bg);color:var(--red);border-color:var(--red-b)}.badge.maintenance::before{background:var(--red)}
+
+/* CHECKLIST */
+.checklist{list-style:none;margin:12px 0 24px}
+.checklist li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text2)}
+.checklist li:last-child{border-bottom:none}
+.checklist li::before{content:'○';color:var(--text3);font-size:14px;flex-shrink:0;margin-top:1px}
+.checklist li.done::before{content:'●';color:var(--green)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* PRINT */
+@media print{.sidebar,.page-nav{display:none}.main{padding:24px}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── SIDEBAR ──────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">AgriHaul</div>
+    <div class="sidebar-sub">/ operator manual v1.0</div>
+  </div>
+
+  <div class="nav-group">Overview</div>
+  <a class="nav-link active" href="#overview">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    How it works
+  </a>
+  <a class="nav-link" href="#architecture">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Architecture
+  </a>
+
+  <div class="nav-group">Users</div>
+  <a class="nav-link" href="#farmers">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Farmer SMS guide
+  </a>
+  <a class="nav-link" href="#drivers">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Driver SMS guide
+  </a>
+
+  <div class="nav-group">Dashboard</div>
+  <a class="nav-link" href="#login">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    Login screen
+  </a>
+  <a class="nav-link" href="#dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Dashboard page
+  </a>
+  <a class="nav-link" href="#map">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+    Live map
+  </a>
+  <a class="nav-link" href="#dispatch">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+    Dispatch log
+  </a>
+  <a class="nav-link" href="#fleet">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Fleet management
+  </a>
+  <a class="nav-link" href="#farmers-page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Farmer registry
+  </a>
+
+  <div class="nav-group">Setup</div>
+  <a class="nav-link" href="#setup-sheets">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    Google Sheets
+  </a>
+  <a class="nav-link" href="#setup-twilio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12 19.79 19.79 0 0 1 1.15 3.18 2 2 0 0 1 3.12 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16z"/></svg>
+    Twilio + Make.com
+  </a>
+  <a class="nav-link" href="#setup-deploy">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    GitHub + Netlify
+  </a>
+  <a class="nav-link" href="#costs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Costs
+  </a>
+  <a class="nav-link" href="#troubleshoot">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    Troubleshooting
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="theme-row">
+      <span>Theme</span>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀ Light</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="overview">
+    <div class="hero-badge"><div class="hero-badge-dot"></div>AgriHaul v1.0</div>
+    <h1>Operator Manual</h1>
+    <p>Everything you need to understand, operate, and manage the AgriHaul SMS logistics platform — from how a farmer's text reaches a truck driver to how you read the dashboard.</p>
+    <div class="hero-stats">
+      <div class="stat-card"><div class="stat-value">~$29</div><div class="stat-label">per month to run</div></div>
+      <div class="stat-card"><div class="stat-value">&lt;5s</div><div class="stat-label">dispatch time</div></div>
+      <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">lines of backend code</div></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <div class="section-label">Core concept</div>
+    <h2>How the whole system works</h2>
+    <p>AgriHaul connects three groups of people — <strong>your agritech client</strong> (ops team), <strong>farmers</strong>, and <strong>truck drivers</strong> — using the simplest possible technology: SMS text messages and a web dashboard.</p>
+    <p>Here is the exact journey of a single dispatch, from farmer's text to truck arriving at the farm:</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <div class="flow-title">Farmer texts the AgriHaul number</div>
+          <div class="flow-desc">The farmer uses their basic phone (any phone, no smartphone needed) to send a fixed-format message to the dedicated AgriHaul phone number.</div>
+          <div class="flow-sms">READY 500 KG</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <div class="flow-title">Twilio receives the SMS and fires a webhook</div>
+          <div class="flow-desc">Twilio (the SMS gateway) receives the text instantly and sends an automatic notification (called a webhook) to Make.com, passing along the message text and the farmer's phone number.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <div class="flow-title">Make.com parses the message and looks up the farmer</div>
+          <div class="flow-desc">Make.com reads the SMS text, extracts the weight (500), and looks up the farmer in Google Sheets by matching their phone number. It retrieves the farmer's GPS coordinates, name, and village.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <div class="flow-title">Haversine formula finds the nearest available truck</div>
+          <div class="flow-desc">Make.com fetches all trucks from Google Sheets where Status = "Available". For each truck, it runs the Haversine formula — a math equation that calculates the real-world distance in km between the farmer's GPS and the truck's GPS. It picks the smallest distance.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-content">
+          <div class="flow-title">Dispatch SMS sent to the truck driver</div>
+          <div class="flow-desc">Make.com tells Twilio to send an SMS to the nearest driver's phone number.</div>
+          <div class="flow-sms">DISPATCH: Go to Thiès. Collect 500KG from Amina Diallo. GPS: 14.7833,-16.9240. Reply DONE when loaded.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-content">
+          <div class="flow-title">Farmer gets confirmation</div>
+          <div class="flow-desc">At the same time, Twilio sends the farmer a confirmation so they know a truck is coming.</div>
+          <div class="flow-sms">Confirmed Amina. Truck is on the way. Driver: Ibrahim Bah. Reply WAIT to cancel.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">7</div>
+        <div class="flow-content">
+          <div class="flow-title">Truck status updated to "En Route"</div>
+          <div class="flow-desc">Make.com writes "En Route" to that truck's row in Google Sheets so no second dispatch is sent to the same driver.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">8</div>
+        <div class="flow-content">
+          <div class="flow-title">Driver replies DONE — cycle resets</div>
+          <div class="flow-desc">Once the pickup is complete, the driver texts DONE. Make.com sets the truck status back to Available, logs the dispatch in DispatchLog, and the dashboard updates on the next refresh.</div>
+          <div class="flow-sms">DONE</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <div class="section-label">System design</div>
+    <h2>Architecture — the 5 tools</h2>
+    <p>The platform uses exactly five cloud tools. Each one does one job. They connect like a chain — the output of each feeds the next.</p>
+
+    <div class="arch">
+      <div class="arch-row">
+        <div class="arch-box green">
+          <div class="arch-title">📱 Farmer / Driver phones</div>
+          <div class="arch-desc">Any basic phone. Send and receive SMS. No internet or app required.</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-box blue">
+          <div class="arch-title">📡 Twilio / Africa's Talking</div>
+          <div class="arch-desc">SMS gateway. Owns the dedicated phone number. Receives all incoming texts. Sends all outgoing texts. Fires a webhook to Make.com instantly on every SMS.</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-box amber">
+          <div class="arch-title">⚙️ Make.com</div>
+          <div class="arch-desc">The automation brain. 4 visual scenarios: Dispatch, Location Update, Done, On/Off. No code — drag and drop. Reads Google Sheets, runs math, fires Twilio replies.</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-box accent" style="flex:.8">
+          <div class="arch-title">📊 Google Sheets</div>
+          <div class="arch-desc">The database. 3 tabs: Farmers, Trucks, DispatchLog. Make.com reads and writes. Your ops team edits directly.</div>
+        </div>
+        <div style="width:12px"></div>
+        <div class="arch-box purple" style="flex:.8">
+          <div class="arch-title">🖥️ AgriHaulOps Dashboard</div>
+          <div class="arch-desc">Static website on Netlify. Reads Sheets CSV. Shows map, metrics, logs. Only your ops team uses this.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">💡 Key insight</div>
+      <p>Farmers and drivers <strong>never touch the dashboard</strong>. The dashboard is only for your client's operations team. Farmers and drivers interact solely via SMS.</p>
+    </div>
+  </section>
+
+  <!-- FARMERS SMS -->
+  <section id="farmers">
+    <div class="section-label">Farmers</div>
+    <h2>Farmer SMS guide</h2>
+    <p>Farmers send messages to one number — the AgriHaul dedicated SMS number. They only need to know two commands.</p>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ Format is strict</div>
+      <p>Farmers must type the message exactly as shown. The system parses by keyword — if they type "READY500KG" (no spaces) it won't work. Print and hand out the wallet card during onboarding.</p>
+    </div>
+
+    <div class="cmd-grid">
+      <div class="cmd-card farmer">
+        <div class="cmd-who">🌾 Farmer</div>
+        <div class="cmd-text">READY [weight] KG</div>
+        <div class="cmd-desc">Triggers dispatch. Replace [weight] with actual kg. Example: <code>READY 500 KG</code></div>
+      </div>
+      <div class="cmd-card farmer">
+        <div class="cmd-who">🌾 Farmer</div>
+        <div class="cmd-text">WAIT</div>
+        <div class="cmd-desc">Cancels a pending pickup before the truck has departed. Send only immediately after the confirmation SMS.</div>
+      </div>
+    </div>
+
+    <h3>What the farmer receives back</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Situation</th><th>SMS the farmer receives</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">After sending READY</td><td class="mono">Confirmed Amina. Truck is on the way. Driver: Ibrahim Bah. Reply WAIT to cancel.</td></tr>
+          <tr><td class="hi">No truck available</td><td class="mono">No trucks available right now. Please try again in 30 minutes.</td></tr>
+          <tr><td class="hi">Format not recognised</td><td class="mono">Format not recognised. Please text: READY [weight] KG</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Adding a new farmer</h3>
+    <p>Two ways to add farmers to the system:</p>
+    <ol style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2">
+      <li><strong>Google Forms</strong> — share the onboarding form with your field staff. Each submission automatically adds a row to the Farmers tab in Google Sheets.</li>
+      <li><strong>Dashboard</strong> — log in to the AgriHaulOps dashboard → Farmers page → click <strong>+ Add farmer</strong>. Fill in name, phone, village, and GPS coordinates.</li>
+    </ol>
+
+    <div class="callout info">
+      <div class="callout-title">📍 GPS coordinates</div>
+      <p>Each farmer needs a GPS latitude and longitude stored in the Farmers sheet. The easiest way: open Google Maps on a phone, press and hold on the farm location, and read the coordinates that appear at the bottom. Format: <code>14.7833, -16.9240</code></p>
+    </div>
+  </section>
+
+  <!-- DRIVERS SMS -->
+  <section id="drivers">
+    <div class="section-label">Drivers</div>
+    <h2>Driver SMS guide</h2>
+    <p>Drivers receive dispatch instructions automatically. They also use SMS to update their GPS location and availability status. Four commands to learn.</p>
+
+    <div class="cmd-grid">
+      <div class="cmd-card driver">
+        <div class="cmd-who">🚛 Driver</div>
+        <div class="cmd-text">LOC [lat] [lon]</div>
+        <div class="cmd-desc">Updates your GPS position in the system. Send at the start of every shift. Example: <code>LOC 14.6928 -17.4467</code></div>
+      </div>
+      <div class="cmd-card driver">
+        <div class="cmd-who">🚛 Driver</div>
+        <div class="cmd-text">DONE</div>
+        <div class="cmd-desc">Marks pickup complete. Your status resets to Available and you're ready for the next dispatch.</div>
+      </div>
+      <div class="cmd-card driver">
+        <div class="cmd-who">🚛 Driver</div>
+        <div class="cmd-text">OFF</div>
+        <div class="cmd-desc">Marks you as unavailable (breakdown, rest, end of shift). No more dispatches until you send ON.</div>
+      </div>
+      <div class="cmd-card driver">
+        <div class="cmd-who">🚛 Driver</div>
+        <div class="cmd-text">ON</div>
+        <div class="cmd-desc">Marks you as available again after being offline. System can now dispatch pickups to you.</div>
+      </div>
+    </div>
+
+    <h3>Driver daily routine</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num" style="width:32px;height:32px;font-size:12px">AM</div>
+        <div class="flow-content">
+          <div class="flow-title">Start of shift — send location</div>
+          <div class="flow-desc">Text your current GPS coordinates so the system knows where you are.</div>
+          <div class="flow-sms">LOC 14.6928 -17.4467</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="width:32px;height:32px;font-size:12px">→</div>
+        <div class="flow-content">
+          <div class="flow-title">Receive dispatch</div>
+          <div class="flow-desc">When a nearby farmer is ready, you'll receive a dispatch SMS with the farmer name, GPS, and weight. Drive to the location.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="width:32px;height:32px;font-size:12px">✓</div>
+        <div class="flow-content">
+          <div class="flow-title">After loading — send DONE</div>
+          <div class="flow-desc">Once you've collected the produce and it's loaded, text DONE. Your status resets to Available.</div>
+          <div class="flow-sms">DONE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ Location matters</div>
+      <p>The nearest-truck algorithm only works if drivers keep their GPS updated. If a driver hasn't sent LOC today, the system uses the last known position which may be from yesterday — causing wrong dispatches. Enforce LOC at shift start.</p>
+    </div>
+  </section>
+
+  <!-- LOGIN -->
+  <section id="login">
+    <div class="section-label">Dashboard</div>
+    <h2>Login screen</h2>
+    <p>The AgriHaulOps dashboard opens to a login screen with an animated farm landscape background. This changes between a night scene (dark mode) and a golden daylight scene (light mode).</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Element</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Animated hills + wheat</td><td>Decorative background — wheat stalks sway gently, particles float up like pollen. Dark mode = moonlit field. Light mode = sunny farmland.</td></tr>
+          <tr><td class="hi">☀ / ☾ button (top right)</td><td>Toggles dark and light mode. Your choice is saved and remembered when you return.</td></tr>
+          <tr><td class="hi">Username field</td><td>Enter the username set in <code>config.js → APP.DEMO_USERNAME</code>. Default: <code>admin</code></td></tr>
+          <tr><td class="hi">Password field</td><td>Enter the password set in <code>config.js → APP.DEMO_PASSWORD</code>. Default: <code>agrihaulops2024</code></td></tr>
+          <tr><td class="hi">Sign in button</td><td>Loads all data from Google Sheets and opens the dashboard. Button shows "Loading…" while data fetches.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">🔐 Changing the password</div>
+      <p>Open <code>js/config.js</code>, find <code>DEMO_PASSWORD</code>, and change the value. Then push to GitHub — Netlify will redeploy in 30 seconds. Remember: config.js is in <code>.gitignore</code> so it never gets committed — you must change it directly on the server or through Netlify's environment variables for production use.</p>
+    </div>
+  </section>
+
+  <!-- DASHBOARD PAGE -->
+  <section id="dashboard">
+    <h2>Dashboard page</h2>
+    <p>The main overview screen. It loads first after login and gives your ops team a summary of what's happening right now.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Element</th><th>What it shows</th><th>Where data comes from</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="hi">Available trucks card</td>
+            <td>Count of trucks where Status = "Available". Below it: how many are En Route and how many are in Maintenance.</td>
+            <td>Trucks sheet — Status column</td>
+          </tr>
+          <tr>
+            <td class="hi">Dispatches today card</td>
+            <td>Number of dispatch log entries where Date = today.</td>
+            <td>DispatchLog sheet — Date column</td>
+          </tr>
+          <tr>
+            <td class="hi">Weight collected today</td>
+            <td>Sum of all WeightKG values in today's dispatches. Shows in kg below 1,000 or tonnes above it.</td>
+            <td>DispatchLog sheet — WeightKG column</td>
+          </tr>
+          <tr>
+            <td class="hi">Registered farmers</td>
+            <td>Total number of rows in the Farmers sheet.</td>
+            <td>Farmers sheet — row count</td>
+          </tr>
+          <tr>
+            <td class="hi">Recent dispatches table</td>
+            <td>Last 8 dispatch records: time, farmer, village, weight, driver, distance.</td>
+            <td>DispatchLog sheet — sorted newest first</td>
+          </tr>
+          <tr>
+            <td class="hi">Fleet snapshot table</td>
+            <td>First 12 trucks: truck ID, driver first name, current status badge.</td>
+            <td>Trucks sheet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Auto-refresh</h3>
+    <p>The dashboard automatically re-fetches data from Google Sheets every <strong>30 seconds</strong>. You'll see a brief "Data refreshed" toast notification at the bottom right. You can change this interval in <code>config.js → SHEETS.REFRESH_INTERVAL</code> (value is in milliseconds — 30000 = 30 seconds).</p>
+  </section>
+
+  <!-- MAP -->
+  <section id="map">
+    <h2>Live map</h2>
+    <p>A visual overview of all truck and farmer positions plotted on a grid representing your operating region.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Pin type</th><th>Colour</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Round dot (large)</td><td><span class="badge available">Available</span></td><td>Truck is available and waiting for a dispatch</td></tr>
+          <tr><td class="hi">Round dot (large)</td><td><span class="badge enroute">En Route</span></td><td>Truck is currently heading to a pickup</td></tr>
+          <tr><td class="hi">Round dot (large)</td><td><span class="badge maintenance">Maintenance</span></td><td>Truck is offline or in maintenance</td></tr>
+          <tr><td class="hi">Diamond (small, teal)</td><td style="color:var(--blue)">■ Blue diamond</td><td>Farmer location</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Hovering over a pin</h3>
+    <p>Move your mouse over any pin to see a tooltip showing: truck ID, driver name, current status, GPS coordinates, and last updated time. For farmers: name, village, and GPS.</p>
+
+    <h3>Map bounds</h3>
+    <p>The map is scaled to cover your operating region. Your sheet data covers West Africa (Senegal, Ghana, Côte d'Ivoire, Guinea). If you expand operations, update <code>MAP_BOUNDS</code> in <code>js/map.js</code>.</p>
+
+    <div class="callout tip">
+      <div class="callout-title">💡 Pins don't move in real time</div>
+      <p>Truck positions update when drivers send a <code>LOC</code> SMS. The map then shows the new position on the next 30-second data refresh. This is not live GPS tracking — it's last-known position.</p>
+    </div>
+  </section>
+
+  <!-- DISPATCH LOG -->
+  <section id="dispatch">
+    <h2>Dispatch log</h2>
+    <p>A full searchable table of every dispatch that has happened, newest first. Make.com automatically writes a row here after every completed dispatch cycle.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td class="hi mono">Date</td><td>Date of the dispatch (YYYY-MM-DD)</td></tr>
+          <tr><td class="hi mono">Time</td><td>Time the farmer's SMS arrived (HH:MM)</td></tr>
+          <tr><td class="hi mono">Farmer</td><td>Full name of the farmer who requested pickup</td></tr>
+          <tr><td class="hi mono">Village</td><td>Farmer's village — taken from their row in the Farmers sheet</td></tr>
+          <tr><td class="hi mono">Weight KG</td><td>The weight the farmer texted (e.g. 500)</td></tr>
+          <tr><td class="hi mono">Driver</td><td>Name of the driver who was dispatched</td></tr>
+          <tr><td class="hi mono">Truck</td><td>Truck ID (e.g. TRK-001)</td></tr>
+          <tr><td class="hi mono">Distance</td><td>Km between the farmer and the truck when dispatched (calculated by Haversine)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Search / filter</h3>
+    <p>Type any text in the search bar to filter by farmer name, village, driver, or truck ID. The table updates instantly as you type.</p>
+
+    <h3>Simulate button</h3>
+    <p>The <strong>+ Simulate</strong> button creates a fake dispatch entry using random seed data. Use this only for testing and demonstrations. Remove or hide it before giving the dashboard to a client.</p>
+  </section>
+
+  <!-- FLEET MANAGEMENT -->
+  <section id="fleet">
+    <h2>Fleet management</h2>
+    <p>The Trucks page lists all 60 trucks with their full details and lets you manage status and add new trucks.</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>What it means</th><th>Can you edit it?</th></tr></thead>
+        <tbody>
+          <tr><td class="hi mono">Truck ID</td><td>Unique identifier e.g. TRK-001</td><td>In Google Sheets</td></tr>
+          <tr><td class="hi mono">Driver</td><td>Driver's full name</td><td>In Google Sheets</td></tr>
+          <tr><td class="hi mono">Phone</td><td>Driver's phone number — this is where dispatch SMS goes</td><td>In Google Sheets</td></tr>
+          <tr><td class="hi mono">Status</td><td><span class="badge available">Available</span> <span class="badge enroute">En Route</span> <span class="badge maintenance">Maintenance</span></td><td>Toggle button on dashboard</td></tr>
+          <tr><td class="hi mono">Lat / Lon</td><td>Last known GPS coordinates (updated when driver sends LOC)</td><td>Via LOC SMS</td></tr>
+          <tr><td class="hi mono">Last Updated</td><td>When the GPS was last updated</td><td>Automatic</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Toggle button</h3>
+    <p>Each truck row has a <strong>Toggle</strong> button that cycles the status: Available → En Route → Maintenance → Available. Use this to manually override a truck's status from the dashboard — for example, if a driver's phone is dead and they can't text OFF.</p>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ Toggle is local only</div>
+      <p>Status changes made via the Toggle button on the dashboard are not written back to Google Sheets — they only affect what you see until the next data refresh. To permanently change a truck's status, edit the Status column directly in the Google Sheet or wait for the driver to send the correct SMS.</p>
+    </div>
+
+    <h3>Adding a new truck</h3>
+    <p>Click <strong>+ Add truck</strong> (top right). Fill in:</p>
+    <ul style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2.2">
+      <li><strong>Truck ID</strong> — use the next sequential ID (e.g. TRK-009)</li>
+      <li><strong>Driver name</strong> — full name</li>
+      <li><strong>Driver phone</strong> — include country code (e.g. +221 77 ...)</li>
+      <li><strong>Status</strong> — initial status (Available or Unavailable)</li>
+      <li><strong>GPS Lat / Lon</strong> — starting position (optional, can be updated via LOC SMS)</li>
+    </ul>
+    <p>Also add this truck manually to your Google Sheets Trucks tab so it persists after the next data refresh.</p>
+  </section>
+
+  <!-- FARMER REGISTRY -->
+  <section id="farmers-page">
+    <h2>Farmer registry</h2>
+    <p>Full list of all registered farmers. Searchable by name, village, or phone number.</p>
+
+    <h3>Adding a farmer via dashboard</h3>
+    <p>Click <strong>+ Add farmer</strong> and fill in name, phone, village, and GPS coordinates. Remember to also add them to the Google Sheets Farmers tab for the data to persist.</p>
+
+    <h3>GPS coordinates for farmers</h3>
+    <p>The most reliable method:</p>
+    <ol style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2.2">
+      <li>Open Google Maps on any phone</li>
+      <li>Navigate to the farm</li>
+      <li>Long-press on the exact location</li>
+      <li>Read the coordinates shown at the bottom (e.g. <code>14.7833, -16.9240</code>)</li>
+      <li>Enter these as Lat and Lon</li>
+    </ol>
+  </section>
+
+  <!-- SETUP: GOOGLE SHEETS -->
+  <section id="setup-sheets">
+    <div class="section-label">Setup guide</div>
+    <h2>Google Sheets connection</h2>
+    <p>The dashboard reads data from your published Google Sheet CSV URLs. Here's how to set it up:</p>
+
+    <ol style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2.4">
+      <li>Open your Google Sheet (use AgriDispatch.xlsx as the template — it has the correct column names)</li>
+      <li>Go to <strong>File → Share → Publish to web</strong></li>
+      <li>Change "Entire Document" to the <strong>Farmers</strong> tab</li>
+      <li>Change the format dropdown from "Web page" to <strong>CSV</strong></li>
+      <li>Click <strong>Publish</strong> and copy the URL shown</li>
+      <li>Repeat steps 3–5 for the <strong>Trucks</strong> tab and <strong>DispatchLog</strong> tab</li>
+      <li>Open <code>js/config.js</code> and paste the three URLs into <code>SHEETS.FARMERS_URL</code>, <code>TRUCKS_URL</code>, and <code>DISPATCH_URL</code></li>
+    </ol>
+
+    <div class="callout success">
+      <div class="callout-title">✓ How to test it</div>
+      <p>After adding the URLs, open the dashboard, log in, and check the browser console (F12 → Console tab). If you see <code>[AgriHaul] No Sheet URL configured</code> it means the URLs weren't saved. If data loads correctly, no console messages appear.</p>
+    </div>
+
+    <h3>Required column names (exact)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Sheet tab</th><th>Required columns (case-sensitive)</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Farmers</td><td class="mono">Name, Phone, Village, Lat, Lon, Registered</td></tr>
+          <tr><td class="hi">Trucks</td><td class="mono">TruckID, DriverName, Phone, Status, Lat, Lon, LastUpdated</td></tr>
+          <tr><td class="hi">DispatchLog</td><td class="mono">Date, Time, Farmer, Village, WeightKG, Driver, TruckID, DistanceKM</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SETUP: TWILIO + MAKE -->
+  <section id="setup-twilio">
+    <h2>Twilio + Make.com setup</h2>
+
+    <h3>Twilio (SMS gateway)</h3>
+    <ol style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2.4">
+      <li>Sign up at <strong>twilio.com</strong> (free trial gives $15 credit)</li>
+      <li>Go to Console → Phone Numbers → Buy a number with SMS enabled (~$1)</li>
+      <li>Go to Console Dashboard → Account Info. Copy <strong>Account SID</strong> and <strong>Auth Token</strong></li>
+      <li>Open <code>js/config.js</code> and fill in <code>TWILIO.ACCOUNT_SID</code>, <code>AUTH_TOKEN</code>, and <code>FROM_NUMBER</code></li>
+    </ol>
+
+    <h3>Make.com (automation)</h3>
+    <ol style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2.4">
+      <li>Sign up at <strong>make.com</strong>. Create a new scenario.</li>
+      <li>Add a <strong>Webhooks → Custom webhook</strong> module. Copy the webhook URL.</li>
+      <li>In Twilio Console: your phone number → Messaging → <strong>A message comes in</strong> → paste the Make.com webhook URL</li>
+      <li>Build the 4 scenarios (Dispatch, LOC update, DONE, ON/OFF) using the prompt chains from the project documentation</li>
+      <li>Paste the webhook URL into <code>config.js → MAKE.WEBHOOK_URL</code></li>
+    </ol>
+  </section>
+
+  <!-- SETUP: GITHUB + NETLIFY -->
+  <section id="setup-deploy">
+    <h2>GitHub + Netlify deployment</h2>
+    <p>The dashboard is a folder of files. Push to GitHub once — Netlify deploys automatically every time you push a change.</p>
+
+    <h3>First time: push to GitHub</h3>
+    <div class="code-block">
+      <span class="c"># 1. Open terminal and go to the project folder</span>
+cd agrihaulapp
+
+<span class="c"># 2. Initialise git and make first commit</span>
+git init
+git add .
+git commit -m <span class="v">"AgriHaul ops dashboard"</span>
+
+<span class="c"># 3. Create repo on github.com, then connect</span>
+git remote add origin https://github.com/YOUR_USERNAME/agrihaulapp.git
+git branch -M main
+git push -u origin main
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">⚠️ config.js stays off GitHub</div>
+      <p><code>js/config.js</code> is in <code>.gitignore</code> — it will NOT be committed. This is intentional. Your Twilio keys and Sheet URLs must never be in a public GitHub repo. Only <code>config.example.js</code> (with empty values) is committed as a reference.</p>
+    </div>
+
+    <h3>Connect Netlify</h3>
+    <ol style="color:var(--text2);padding-left:20px;font-size:14px;line-height:2.4">
+      <li>Go to <strong>netlify.com</strong> → sign in with GitHub</li>
+      <li>Click <strong>Add new site → Import an existing project → GitHub</strong></li>
+      <li>Select your <strong>agrihaulapp</strong> repo</li>
+      <li>Leave build command and publish directory <strong>blank</strong> (it's plain HTML, no build step needed)</li>
+      <li>Click <strong>Deploy site</strong> — live URL appears in ~30 seconds</li>
+    </ol>
+
+    <h3>Updating the dashboard later</h3>
+    <div class="code-block">
+      <span class="c"># Make your changes, then:</span>
+git add .
+git commit -m <span class="v">"Updated map bounds / fixed farmer table"</span>
+git push
+<span class="c"># Netlify auto-deploys within 30 seconds</span>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-title">💡 Custom domain (optional)</div>
+      <p>In Netlify: Site settings → Domain management → Options → Edit site name. Type something like <code>agrihaulops</code> to get <code>https://agrihaulops.netlify.app</code> for free. Or point a custom domain you own (e.g. agrihaulops.com) by adding a DNS record.</p>
+    </div>
+  </section>
+
+  <!-- COSTS -->
+  <section id="costs">
+    <div class="section-label">Budget</div>
+    <h2>Monthly costs</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Service</th><th>Cost</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Twilio SMS</td><td class="amber">~$15–20</td><td>~2,000 SMS/month at $0.0075 each</td></tr>
+          <tr><td class="hi">Africa's Talking (alternative)</td><td class="green">~$4–6</td><td>Better rate if operating in Africa ($0.002/SMS)</td></tr>
+          <tr><td class="hi">Make.com Core</td><td class="amber">$9</td><td>10,000 operations/month — enough for ~3,000 dispatch cycles</td></tr>
+          <tr><td class="hi">Google Sheets</td><td class="green">Free</td><td>Free with any Google account</td></tr>
+          <tr><td class="hi">Netlify hosting</td><td class="green">Free</td><td>Free tier: 100GB bandwidth, custom domain</td></tr>
+          <tr><td class="hi">GitHub</td><td class="green">Free</td><td>Free public or private repo</td></tr>
+          <tr><td class="hi"><strong>Total (Twilio)</strong></td><td class="amber"><strong>~$24–29/mo</strong></td><td></td></tr>
+          <tr><td class="hi"><strong>Total (Africa's Talking)</strong></td><td class="green"><strong>~$13–15/mo</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section id="troubleshoot">
+    <div class="section-label">Help</div>
+    <h2>Troubleshooting</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Problem</th><th>Most likely cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="hi">Farmer sends READY but driver gets nothing</td>
+            <td>All trucks are set to En Route or Maintenance, OR Make.com scenario is paused</td>
+            <td>Check Trucks sheet — at least one must show "Available". Check Make.com scenario is active (green toggle).</td>
+          </tr>
+          <tr>
+            <td class="hi">Wrong truck dispatched (far away)</td>
+            <td>Driver hasn't updated GPS today. System uses stale coordinates.</td>
+            <td>Driver must send <code>LOC [lat] [lon]</code> at start of every shift.</td>
+          </tr>
+          <tr>
+            <td class="hi">Dashboard shows old data</td>
+            <td>Google Sheets URLs not configured, or Sheet not published to web</td>
+            <td>Check <code>config.js</code> URLs. Open a published URL directly in browser — it should return CSV text.</td>
+          </tr>
+          <tr>
+            <td class="hi">Dashboard map shows no pins</td>
+            <td>Lat/Lon values in sheet are empty or text instead of numbers</td>
+            <td>Check the Trucks and Farmers sheets — Lat and Lon must be numbers, not text.</td>
+          </tr>
+          <tr>
+            <td class="hi">Login fails</td>
+            <td>Credentials don't match config.js values</td>
+            <td>Open <code>js/config.js</code> and verify DEMO_USERNAME and DEMO_PASSWORD.</td>
+          </tr>
+          <tr>
+            <td class="hi">Netlify shows old version after push</td>
+            <td>Netlify deploy still in progress</td>
+            <td>Wait 60 seconds, then hard refresh the browser (Ctrl+Shift+R). Check Netlify dashboard for deploy status.</td>
+          </tr>
+          <tr>
+            <td class="hi">Make.com scenario stopped working</td>
+            <td>Free Twilio trial credit ran out, or Make.com operation limit hit</td>
+            <td>Check Twilio billing console. Check Make.com scenario history for error messages.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-title">📋 Before contacting support</div>
+      <p>Open the browser console on the dashboard (press F12 → Console tab). Any errors show there with a description. Also check Make.com → your scenario → History — each run shows success or failure with the exact error message.</p>
+    </div>
+  </section>
+
+  <div class="page-nav">
+    <a href="#overview">← Back to top</a>
+    <a href="index.html">Open dashboard →</a>
+  </div>
+
+</main>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const isLight = html.classList.toggle("light");
+  const btn = document.getElementById("themeBtn");
+  if (btn) btn.textContent = isLight ? "☾ Dark" : "☀ Light";
+  localStorage.setItem("agrihaulManualTheme", isLight ? "light" : "dark");
+}
+// Restore saved theme
+const saved = localStorage.getItem("agrihaulManualTheme");
+if (saved === "light") {
+  document.documentElement.classList.add("light");
+  const btn = document.getElementById("themeBtn");
+  if (btn) btn.textContent = "☾ Dark";
+}
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll("section[id], div[id]");
+const links = document.querySelectorAll(".nav-link");
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      links.forEach(l => l.classList.remove("active"));
+      const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if (active) active.classList.add("active");
+    }
+  });
+}, { rootMargin: "-30% 0px -60% 0px" });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
