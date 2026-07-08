@@ -110,12 +110,4 @@ A `.gitignore` file is included that does this automatically.
 
 ---
 
-## Cost Summary
 
-| Service | Cost |
-|---|---|
-| Twilio (~2,000 SMS/month) | ~$15–20/mo |
-| Make.com Core | $9/mo |
-| Google Sheets | Free |
-| Netlify hosting | Free |
-| **Total** | **~$24–29/mo** |
