@@ -6,7 +6,7 @@ A lightweight, single-page web dashboard for agritech companies managing SMS-bas
 
 ## What This Is
 
-Your agritech client logs in here to:
+agritech client logs in here to:
 - Monitor 60 trucks on a live map
 - View all dispatch history
 - Manage farmer and driver registrations
