@@ -99,15 +99,6 @@ git push -u origin main
 
 ---
 
-## Credentials Security
 
-Never commit real API keys to GitHub. Before pushing:
-1. Copy `js/config.js` → `js/config.example.js` (with empty values)
-2. Add `js/config.js` to `.gitignore`
-3. Only `config.example.js` goes to GitHub
-
-A `.gitignore` file is included that does this automatically.
-
----
 
 
