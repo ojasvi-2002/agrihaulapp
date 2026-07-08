@@ -35,7 +35,7 @@ agrihaulapp/
 
 ---
 
-## Setup Guide
+## Setup Guide (First Time)
 
 ### Step 1 — Google Sheets
 
