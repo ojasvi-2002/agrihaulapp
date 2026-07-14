@@ -143,6 +143,89 @@ function filterFarmers() {
   renderFarmerTable(filtered);
 }
 
+// ── INCOMING REQUESTS TABLE ───────────────────────────────────
+// Renders the parsed SMS intake queue built by buildRequestQueue()
+// in intake.js. Actions differ by status, so the row markup is
+// generated per-request rather than as one shared template.
+
+const REQUEST_STATUS = {
+  ready:     { label: "Ready to confirm",          cls: "available" },
+  confirmed: { label: "Confirmed, needs a truck",   cls: "dispatched" },
+  dispatched:{ label: "Dispatched",                 cls: "available" },
+  review:    { label: "Needs review",               cls: "unavailable" },
+  duplicate: { label: "Possible duplicate",         cls: "unavailable" },
+};
+
+function requestStatusBadge(status) {
+  const s = REQUEST_STATUS[status] || REQUEST_STATUS.review;
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+let _allRequests = [];
+
+function renderRequestsTable(queue, trucks) {
+  const tbody = document.getElementById("requestsTable");
+  if (!tbody) return;
+
+  const availableTrucks = (trucks || []).filter(t => t.Status === "Available");
+  const truckOptions = availableTrucks
+    .map(t => `<option value="${t.TruckID}">${t.TruckID} — ${t.DriverName.split(" ")[0]}</option>`)
+    .join("");
+
+  tbody.innerHTML = queue.map(r => {
+    const f = r.fields;
+    const parsedSummary = [f.name, f.product,
+      f.quantity != null ? `${f.quantity} ${f.unit}` : null, f.location]
+      .filter(Boolean).join(" · ") || "—";
+
+    let actions = "";
+    if (r.status === "review") {
+      actions = `<div class="form-hint" style="margin:0 0 4px">${r.issues.join(", ")}</div>
+        <button class="btn btn-ghost btn-sm" onclick="discardRequest('${r.id}')">Discard</button>`;
+    } else if (r.status === "duplicate") {
+      actions = `<button class="btn btn-ghost btn-sm" onclick="confirmRequest('${r.id}')">Keep anyway</button>
+        <button class="btn btn-ghost btn-sm" onclick="discardRequest('${r.id}')">Discard</button>`;
+    } else if (r.status === "ready") {
+      actions = `<button class="btn btn-ghost btn-sm" onclick="confirmRequest('${r.id}')">
+        ${r.farmerKnown ? "Confirm" : "Approve &amp; register farmer"}</button>`;
+    } else if (r.status === "confirmed") {
+      actions = `<select class="form-select" id="truckSel-${r.id}" style="font-size:11px;padding:5px 8px">
+          <option value="">Assign truck…</option>${truckOptions}
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="dispatchRequest('${r.id}', document.getElementById('truckSel-${r.id}').value)">Dispatch</button>`;
+    } else {
+      actions = `<span class="form-hint">Logged in Dispatch Log</span>`;
+    }
+
+    return `
+    <tr>
+      <td class="mono" style="font-size:11px">${r.receivedAt}</td>
+      <td class="mono" style="font-size:11px">${r.phone}</td>
+      <td class="mono" style="font-size:11px">${r.raw}</td>
+      <td>${parsedSummary}</td>
+      <td>${requestStatusBadge(r.status)}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join("");
+}
+
+function updateRequestsBadge(queue) {
+  const pending = queue.filter(r => r.status === "ready" || r.status === "review").length;
+  const el = document.getElementById("requestsBadge");
+  if (!el) return;
+  el.textContent = pending;
+  el.classList.toggle("warn", queue.some(r => r.status === "review"));
+}
+
+function filterRequests() {
+  const q = (document.getElementById("requestSearch")?.value || "").toLowerCase();
+  const filtered = _allRequests.filter(r =>
+    `${r.phone} ${r.raw} ${r.fields.name} ${r.fields.product} ${r.fields.location}`
+      .toLowerCase().includes(q)
+  );
+  renderRequestsTable(filtered, _allTrucks);
+}
+
 // ── SMALL UTILITIES ───────────────────────────────────────────
 function setEl(id, val) {
   const el = document.getElementById(id);

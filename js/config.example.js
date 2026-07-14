@@ -13,6 +13,7 @@ const CONFIG = {
     FARMERS_URL:  "",   // Publish Farmers tab → CSV → URL
     TRUCKS_URL:   "",   // Publish Trucks tab  → CSV → URL
     DISPATCH_URL: "",   // Publish DispatchLog → CSV → URL
+    REQUESTS_URL: "",   // Publish Requests tab   → CSV → URL (raw inbound SMS)
     REFRESH_INTERVAL: 30000,
   },
   TWILIO: {

@@ -7,12 +7,44 @@ A lightweight, single-page web dashboard for agritech companies managing SMS-bas
 ## What This Is
 
 agritech client logs in here to:
+
+- Review incoming SMS requests, confirm farmers, and assign trucks (Update app, data, tables, add intake.js)
 - Monitor 60 trucks on a live map
 - View all dispatch history
 - Manage farmer and driver registrations
 - Trigger manual dispatches if needed
 
 Farmers and drivers never use this app — they interact only via SMS.
+No WhatsApp or internet connection is assumed on the farmer side; the
+intake format is plain SMS text: `NAME - PRODUCT - QUANTITY - LOCATION`.
+
+---
+
+## How Incoming Requests Work
+
+A farmer texts a structured message and nothing else:
+
+```
+NAME - PRODUCT - QUANTITY - LOCATION
+KWAME - RED OIL - 200L - AJUMAKO
+```
+
+The `Requests` tab in Google Sheets logs the raw message and phone
+number the moment it arrives. `js/intake.js` parses it client-side
+into name, product, quantity, and location, matches the phone number
+against the Farmers sheet, and flags anything that doesn't parse
+cleanly (missing field, non-numeric quantity) as "Needs review"
+instead of guessing.
+
+From the **Requests** page in the dashboard, ops can:
+1. Confirm the request (registers a new farmer automatically if the
+   phone number isn't in the Farmers sheet yet)
+2. Assign an available truck and dispatch it, which writes a normal
+   row to `DispatchLog`
+
+This is the same aggregation pattern as GreenEarth Connect: keep the
+farmer side to plain SMS, do all the parsing, validation, and
+coordination in the backend.
 
 ---
 
@@ -27,6 +59,7 @@ agrihaulapp/
 ├── js/
 │   ├── config.js       ← ★ YOUR INTEGRATION KEYS GO HERE ★
 │   ├── data.js         ← Google Sheets fetch + seed data fallback
+│   ├── intake.js       ← SMS parsing: raw text → structured request
 │   ├── map.js          ← Map rendering logic
 │   ├── tables.js       ← Table render + filter functions
 │   └── app.js          ← Page routing, auth, actions
@@ -39,16 +72,17 @@ agrihaulapp/
 
 ### Step 1 — Google Sheets
 
-1. Create a Google Sheet with three tabs:
+1. Create a Google Sheet with four tabs:
    - `Farmers` — columns: Name, Phone, Village, Lat, Lon, Registered
    - `Trucks` — columns: TruckID, DriverName, Phone, Status, Lat, Lon, LastUpdated
    - `DispatchLog` — columns: Date, Time, Farmer, Village, WeightKG, Driver, TruckID, DistanceKM
+   - `Requests` — columns: Phone, Raw, ReceivedAt (raw inbound SMS, one row per message)
 
 2. Publish the sheet:
    - File → Share → Publish to web → Select each tab → CSV → Publish
    - Copy the published CSV URLs for each tab
 
-3. Open `js/config.js` and paste the URLs into `SHEETS.FARMERS_URL`, `SHEETS.TRUCKS_URL`, and `SHEETS.DISPATCH_URL`
+3. Open `js/config.js` and paste the URLs into `SHEETS.FARMERS_URL`, `SHEETS.TRUCKS_URL`, `SHEETS.DISPATCH_URL`, and `SHEETS.REQUESTS_URL`
 
 ### Step 2 — Twilio
 
@@ -61,7 +95,7 @@ agrihaulapp/
 
 ### Step 3 — Make.com Webhook
 
-1. In Make.com, create your SMS dispatch scenario (see previous prompt chains)
+1. In Make.com, create a scenario: inbound SMS webhook → append row to the Requests tab → (optional) SMS dispatch back to the farmer
 2. Copy the webhook URL from your Make.com scenario
 3. Paste it into `MAKE.WEBHOOK_URL` in `js/config.js`
 

@@ -9,6 +9,9 @@
 //   Farmers sheet:     Name, Phone, Village, Lat, Lon, Registered
 //   Trucks sheet:      TruckID, DriverName, Phone, Status, Lat, Lon, LastUpdated
 //   DispatchLog sheet: Date, Time, Farmer, Village, WeightKG, Driver, TruckID, DistanceKM
+//   Requests sheet:    Phone, Raw, ReceivedAt (raw inbound SMS log, parsed
+//                       client-side in intake.js — see that file for the
+//                       NAME - PRODUCT - QUANTITY - LOCATION format)
 // ============================================================
 
 // ── SEED DATA (used when Google Sheets URLs are empty) ──────
@@ -110,10 +113,11 @@ async function fetchSheet(url, seedData) {
 async function loadAllData() {
   const cfg = window.CONFIG?.SHEETS || {};
 
-  const [farmers, trucks, dispatches] = await Promise.all([
+  const [farmers, trucks, dispatches, requests] = await Promise.all([
     fetchSheet(cfg.FARMERS_URL,  SEED_FARMERS),
     fetchSheet(cfg.TRUCKS_URL,   SEED_TRUCKS),
     fetchSheet(cfg.DISPATCH_URL, SEED_DISPATCH),
+    fetchSheet(cfg.REQUESTS_URL, SEED_REQUESTS),
   ]);
 
   // Normalise status values from your sheet
@@ -130,7 +134,7 @@ async function loadAllData() {
     return db - da;
   });
 
-  return { farmers, trucks, dispatches };
+  return { farmers, trucks, dispatches, requests };
 }
 
 // ── STATUS BADGE HELPER ──────────────────────────────────────

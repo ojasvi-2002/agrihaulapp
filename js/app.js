@@ -7,7 +7,7 @@
 // ============================================================
 
 // ── STATE ────────────────────────────────────────────────────
-let appData = { farmers: [], trucks: [], dispatches: [] };
+let appData = { farmers: [], trucks: [], dispatches: [], requests: [] };
 let refreshTimer = null;
 
 // ── BOOT ─────────────────────────────────────────────────────
@@ -63,6 +63,7 @@ async function doLogin() {
   _allFarmers   = [...appData.farmers];
   _allTrucks    = [...appData.trucks];
   _allDispatches= [...appData.dispatches];
+  _allRequests  = buildRequestQueue(appData.requests, appData.farmers);
 
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainApp").style.display     = "grid";
@@ -108,6 +109,9 @@ async function refreshData() {
   _allFarmers    = [...fresh.farmers];
   _allTrucks     = [...fresh.trucks];
   _allDispatches = [...fresh.dispatches];
+  // Pass the existing queue in so confirmed/dispatched requests keep
+  // their status instead of resetting on every refresh tick.
+  _allRequests   = buildRequestQueue(fresh.requests, fresh.farmers, _allRequests);
   renderAll();
   showToast("Data refreshed");
 }
@@ -117,6 +121,7 @@ function renderAll() {
   renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
   renderRecentDispatches(appData.dispatches);
   renderDashTrucks(appData.trucks);
+  updateRequestsBadge(_allRequests);
 }
 
 // ── PAGE ROUTING ──────────────────────────────────────────────
@@ -144,6 +149,9 @@ function showPage(id, sourceEl) {
       break;
     case "farmers":
       renderFarmerTable(_allFarmers);
+      break;
+    case "requests":
+      renderRequestsTable(_allRequests, appData.trucks);
       break;
   }
 }
@@ -276,6 +284,130 @@ function addFarmer() {
   ["f-farmerName","f-farmerPhone","f-farmerVillage","f-farmerLat","f-farmerLon"].forEach(i => {
     const el = document.getElementById(i); if (el) el.value = "";
   });
+}
+
+// ── SMS INTAKE ACTIONS ───────────────────────────────────────
+// These operate on _allRequests (built by buildRequestQueue in
+// intake.js) and mirror the GreenEarth Connect flow: a farmer's raw
+// SMS becomes a structured request, ops confirms it (registering a
+// new farmer if needed), then assigns a truck to turn it into a
+// real dispatch. Skips WhatsApp/app-based intake entirely — SMS in,
+// structured data out, same as the rest of this dashboard.
+
+function loadIntakeExample() {
+  const el = document.getElementById("intakeText");
+  if (el) el.value = "KWAME - RED OIL - 200L - AJUMAKO";
+}
+
+function ingestMessages() {
+  const el = document.getElementById("intakeText");
+  const lines = (el?.value || "").split("\n").map(l => l.trim()).filter(Boolean);
+  if (!lines.length) { showToast("Paste at least one message", true); return; }
+
+  const now = new Date();
+  const stamp = `${now.toISOString().slice(0,10)} ${now.toTimeString().slice(0,5)}`;
+  lines.forEach(line => {
+    appData.requests.push({ Phone: "SMS-IN", Raw: line, ReceivedAt: stamp });
+  });
+
+  _allRequests = buildRequestQueue(appData.requests, appData.farmers, _allRequests);
+  renderRequestsTable(_allRequests, appData.trucks);
+  updateRequestsBadge(_allRequests);
+  el.value = "";
+  showToast(`${lines.length} message${lines.length > 1 ? "s" : ""} ingested`);
+}
+
+// Demo button — simulates a farmer texting in, using either a known
+// farmer's phone (tests the "already registered" path) or a new one.
+function simulateIncomingSMS() {
+  const products = ["Red Oil", "Maize", "Cassava", "Millet", "Cocoa", "Rice"];
+  const useKnown = appData.farmers.length && Math.random() > 0.4;
+  const farmer = useKnown ? appData.farmers[Math.floor(Math.random() * appData.farmers.length)] : null;
+  const name = farmer ? farmer.Name.split(" ")[0] : ["Yaw","Adama","Salimata","Boubacar"][Math.floor(Math.random()*4)];
+  const phone = farmer ? farmer.Phone : `+233 24 000 ${Math.floor(1000 + Math.random()*8999)}`;
+  const village = farmer ? farmer.Village : ["Techiman","Ho","Sunyani"][Math.floor(Math.random()*3)];
+  const product = products[Math.floor(Math.random() * products.length)];
+  const qty = 50 + Math.floor(Math.random() * 450);
+  const raw = `${name.toUpperCase()} - ${product.toUpperCase()} - ${qty}KG - ${village.toUpperCase()}`;
+
+  const now = new Date();
+  appData.requests.push({
+    Phone: phone, Raw: raw,
+    ReceivedAt: `${now.toISOString().slice(0,10)} ${now.toTimeString().slice(0,5)}`
+  });
+  _allRequests = buildRequestQueue(appData.requests, appData.farmers, _allRequests);
+  renderRequestsTable(_allRequests, appData.trucks);
+  updateRequestsBadge(_allRequests);
+  showToast(`Incoming SMS from ${phone}`);
+}
+
+// Confirms a request: registers a new farmer if the phone number
+// wasn't already in the Farmers sheet, then moves the request to
+// "confirmed" so it can be assigned a truck.
+function confirmRequest(id) {
+  const r = _allRequests.find(x => x.id === id);
+  if (!r) return;
+
+  if (!r.farmerKnown) {
+    const farmer = {
+      Name: r.fields.name || "Unknown",
+      Phone: r.phone,
+      Village: r.fields.location || "—",
+      Lat: (window.CONFIG?.APP?.MAP_CENTER_LAT || 10.0) + (Math.random() - 0.5) * 2,
+      Lon: (window.CONFIG?.APP?.MAP_CENTER_LON || -8.0) + (Math.random() - 0.5) * 2,
+      Registered: new Date().toISOString().slice(0, 10),
+    };
+    appData.farmers.push(farmer);
+    _allFarmers = [...appData.farmers];
+    r.farmerKnown = true;
+    r.farmerName = farmer.Name;
+    renderFarmerTable(_allFarmers);
+    renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
+  }
+
+  r.status = "confirmed";
+  renderRequestsTable(_allRequests, appData.trucks);
+  updateRequestsBadge(_allRequests);
+  showToast(`${r.farmerName} confirmed, awaiting truck`);
+}
+
+function discardRequest(id) {
+  const r = _allRequests.find(x => x.id === id);
+  if (r) appData.requests = appData.requests.filter(x => !(x.Raw === r.raw && x.Phone === r.phone));
+  _allRequests = _allRequests.filter(x => x.id !== id);
+  renderRequestsTable(_allRequests, appData.trucks);
+  updateRequestsBadge(_allRequests);
+  showToast("Request discarded");
+}
+
+// Turns a confirmed request into a real dispatch record, same shape
+// as simulateDispatch() produces, and marks the truck En Route.
+function dispatchRequest(id, truckId) {
+  const r = _allRequests.find(x => x.id === id);
+  const t = appData.trucks.find(x => x.TruckID === truckId);
+  if (!r || r.status !== "confirmed") return;
+  if (!t) { showToast("Choose a truck first", true); return; }
+
+  t.Status = "En Route";
+  const now = new Date();
+  appData.dispatches.unshift({
+    Date: now.toISOString().slice(0, 10),
+    Time: now.toTimeString().slice(0, 5),
+    Farmer: r.farmerName,
+    Village: r.fields.location,
+    WeightKG: r.fields.quantity || 0,
+    Driver: t.DriverName,
+    TruckID: t.TruckID,
+    DistanceKM: (Math.random() * 80 + 5).toFixed(1),
+  });
+  _allDispatches = [...appData.dispatches];
+  r.status = "dispatched";
+
+  renderAll();
+  renderDispatchTable(_allDispatches, true);
+  renderTruckTable(_allTrucks);
+  renderRequestsTable(_allRequests, appData.trucks);
+  showToast(`${t.TruckID} dispatched to ${r.farmerName}`);
 }
 
 // ── MODAL HELPERS ─────────────────────────────────────────────
