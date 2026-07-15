@@ -14,6 +14,10 @@ const CONFIG = {
     TRUCKS_URL:   "",   // Publish Trucks tab  → CSV → URL
     DISPATCH_URL: "",   // Publish DispatchLog → CSV → URL
     REQUESTS_URL: "",   // Publish Requests tab   → CSV → URL (raw inbound SMS)
+    WRITE_URL: "",      // Apps Script web app URL — see apps-script/Code.gs.
+                         // Without this, anything added on the dashboard
+                         // (new farmer, new truck, dispatch) stays local
+                         // only and is lost on refresh.
     REFRESH_INTERVAL: 30000,
   },
   TWILIO: {

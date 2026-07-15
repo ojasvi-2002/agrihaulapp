@@ -7,8 +7,7 @@ A lightweight, single-page web dashboard for agritech companies managing SMS-bas
 ## What This Is
 
 agritech client logs in here to:
-
-- Review incoming SMS requests, confirm farmers, and assign trucks (Update app, data, tables, add intake.js)
+- Review incoming SMS requests, confirm farmers, and assign trucks
 - Monitor 60 trucks on a live map
 - View all dispatch history
 - Manage farmer and driver registrations
@@ -83,6 +82,20 @@ agrihaulapp/
    - Copy the published CSV URLs for each tab
 
 3. Open `js/config.js` and paste the URLs into `SHEETS.FARMERS_URL`, `SHEETS.TRUCKS_URL`, `SHEETS.DISPATCH_URL`, and `SHEETS.REQUESTS_URL`
+
+> These CSV links are **read-only**. Farmers/trucks/dispatches added on the dashboard won't reach Sheets, and won't survive a page refresh, until you also do Step 1a below.
+
+### Step 1a — Write path (Apps Script)
+
+Reading a published CSV is one-way. To make "Add Farmer," "Add Truck," and dispatches from the Requests page actually save to Sheets:
+
+1. In your spreadsheet, go to Extensions → Apps Script
+2. Delete the placeholder code and paste in the contents of `apps-script/Code.gs` from this repo
+3. Deploy → New deployment → type **Web app** → Execute as **Me** → Who has access **Anyone**
+4. Copy the Web app URL it gives you
+5. Paste it into `SHEETS.WRITE_URL` in `js/config.js`
+
+Without this step the app still works for demos (everything persists for your current browser session), it just won't sync to Sheets or survive a refresh.
 
 ### Step 2 — Twilio
 

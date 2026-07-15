@@ -106,6 +106,37 @@ async function fetchSheet(url, seedData) {
   }
 }
 
+// ── WRITE PATH ───────────────────────────────────────────────
+// fetchSheet() above only reads. A "Publish to web" CSV link can't
+// accept writes, so anything added on the dashboard (new farmer, new
+// truck, a dispatch, an SMS request) needs a separate endpoint that's
+// actually allowed to append a row: apps-script/Code.gs, deployed as
+// a Google Apps Script web app and pasted into SHEETS.WRITE_URL.
+//
+// Apps Script web apps don't return CORS headers by default, so this
+// fires the request with mode:"no-cors" — we can't read the response,
+// but the write goes through. If SHEETS.WRITE_URL isn't set, this is
+// a no-op and the change stays local-only until you configure it.
+async function postToSheet(action, payload) {
+  const url = window.CONFIG?.SHEETS?.WRITE_URL;
+  if (!url) {
+    console.info(`[AgriHaul] No WRITE_URL configured — ${action} kept local only.`);
+    return false;
+  }
+  try {
+    await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action, payload }),
+    });
+    return true;
+  } catch (err) {
+    console.warn(`[AgriHaul] Failed to write ${action} to Sheets:`, err.message);
+    return false;
+  }
+}
+
 // ── MAIN DATA LOAD ───────────────────────────────────────────
 // Called on page load and every REFRESH_INTERVAL milliseconds.
 // Returns { farmers, trucks, dispatches } — all normalised.

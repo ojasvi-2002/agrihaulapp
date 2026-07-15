@@ -206,7 +206,7 @@ function cycleStatus(truckId) {
 // In production this button can be replaced by a "Force dispatch"
 // that calls triggerMakeDispatch() to fire the real Make.com flow.
 
-function simulateDispatch() {
+async function simulateDispatch() {
   const farmers = appData.farmers;
   const avail   = appData.trucks.filter(t => t.Status === "Available");
   if (!farmers.length || !avail.length) {
@@ -229,13 +229,17 @@ function simulateDispatch() {
   renderAll();
   renderDispatchTable(_allDispatches, true);
   showToast(`Dispatched ${t.TruckID} to ${f.Name}`);
+  await postToSheet("addDispatch", entry);
 }
 
 // ── ADD TRUCK ─────────────────────────────────────────────────
-// Adds to local state. To persist to Google Sheets, use the
-// Google Sheets API or have ops staff add rows directly.
+// Adds to local state immediately, then writes through to the
+// Trucks tab via the Apps Script endpoint (see apps-script/Code.gs).
+// If SHEETS.WRITE_URL isn't configured yet, the truck still shows up
+// in this session but won't survive a refresh or show up for anyone
+// else — postToSheet() logs that to the console either way.
 
-function addTruck() {
+async function addTruck() {
   const get = id => document.getElementById(id)?.value.trim();
   const id   = get("f-truckId");
   const name = get("f-driverName");
@@ -254,7 +258,10 @@ function addTruck() {
   closeModal("addTruck");
   renderTruckTable(_allTrucks);
   renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
-  showToast(`Truck ${id} added`);
+
+  const saved = await postToSheet("addTruck", truck);
+  showToast(saved ? `Truck ${id} added and synced to Sheets` : `Truck ${id} added (local only — set WRITE_URL to sync)`);
+
   // Clear form
   ["f-truckId","f-driverName","f-driverPhone","f-truckLat","f-truckLon"].forEach(i => {
     const el = document.getElementById(i); if (el) el.value = "";
@@ -262,7 +269,7 @@ function addTruck() {
 }
 
 // ── ADD FARMER ────────────────────────────────────────────────
-function addFarmer() {
+async function addFarmer() {
   const get = id => document.getElementById(id)?.value.trim();
   const name    = get("f-farmerName");
   const phone   = get("f-farmerPhone");
@@ -280,7 +287,10 @@ function addFarmer() {
   closeModal("addFarmer");
   renderFarmerTable(_allFarmers);
   renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
-  showToast(`Farmer ${name} registered`);
+
+  const saved = await postToSheet("addFarmer", farmer);
+  showToast(saved ? `Farmer ${name} registered and synced to Sheets` : `Farmer ${name} registered (local only — set WRITE_URL to sync)`);
+
   ["f-farmerName","f-farmerPhone","f-farmerVillage","f-farmerLat","f-farmerLon"].forEach(i => {
     const el = document.getElementById(i); if (el) el.value = "";
   });
@@ -344,7 +354,7 @@ function simulateIncomingSMS() {
 // Confirms a request: registers a new farmer if the phone number
 // wasn't already in the Farmers sheet, then moves the request to
 // "confirmed" so it can be assigned a truck.
-function confirmRequest(id) {
+async function confirmRequest(id) {
   const r = _allRequests.find(x => x.id === id);
   if (!r) return;
 
@@ -363,6 +373,7 @@ function confirmRequest(id) {
     r.farmerName = farmer.Name;
     renderFarmerTable(_allFarmers);
     renderMetrics(appData.farmers, appData.trucks, appData.dispatches);
+    await postToSheet("addFarmer", farmer);
   }
 
   r.status = "confirmed";
@@ -382,7 +393,7 @@ function discardRequest(id) {
 
 // Turns a confirmed request into a real dispatch record, same shape
 // as simulateDispatch() produces, and marks the truck En Route.
-function dispatchRequest(id, truckId) {
+async function dispatchRequest(id, truckId) {
   const r = _allRequests.find(x => x.id === id);
   const t = appData.trucks.find(x => x.TruckID === truckId);
   if (!r || r.status !== "confirmed") return;
@@ -390,7 +401,7 @@ function dispatchRequest(id, truckId) {
 
   t.Status = "En Route";
   const now = new Date();
-  appData.dispatches.unshift({
+  const dispatch = {
     Date: now.toISOString().slice(0, 10),
     Time: now.toTimeString().slice(0, 5),
     Farmer: r.farmerName,
@@ -399,7 +410,8 @@ function dispatchRequest(id, truckId) {
     Driver: t.DriverName,
     TruckID: t.TruckID,
     DistanceKM: (Math.random() * 80 + 5).toFixed(1),
-  });
+  };
+  appData.dispatches.unshift(dispatch);
   _allDispatches = [...appData.dispatches];
   r.status = "dispatched";
 
@@ -408,6 +420,8 @@ function dispatchRequest(id, truckId) {
   renderTruckTable(_allTrucks);
   renderRequestsTable(_allRequests, appData.trucks);
   showToast(`${t.TruckID} dispatched to ${r.farmerName}`);
+
+  await postToSheet("addDispatch", dispatch);
 }
 
 // ── MODAL HELPERS ─────────────────────────────────────────────
