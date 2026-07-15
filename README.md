@@ -112,7 +112,7 @@ Without this step the app still works for demos (everything persists for your cu
 2. Copy the webhook URL from your Make.com scenario
 3. Paste it into `MAKE.WEBHOOK_URL` in `js/config.js`
 
-### Step 4 — Deploy Free
+### Step 4 — Deploy
 
 **Option A — Netlify Drop (zero account)**
 1. Zip the entire `agrihaulapp/` folder
@@ -124,12 +124,6 @@ Without this step the app still works for demos (everything persists for your cu
 1. Push this repo to GitHub
 2. Log in to netlify.com → New site from Git → Connect repo → Deploy
 3. Any push to main auto-deploys
-
-**Option C — GitHub Pages**
-1. Push to GitHub
-2. Settings → Pages → Source: main branch / root
-3. Live at `https://yourusername.github.io/agrihaulapp`
-
 ---
 
 ## GitHub Setup (First Time)
